@@ -77,26 +77,25 @@ public class RegisterActivityController {
 
         ModelAndView mav = new ModelAndView();
 
-        /*
-         * TODO ➊ セッションからuserIdを取得する
-         */
-        SessionDto  sessionDto = commonService.getSessionDto(session);
-        String leaderUserID = sessionDto.getUserId();
-
+        // セッションからclubIdを取得
+        SessionDto sessionDto = commonService.getSessionDto(session);
+        String leaderClubId = sessionDto.getClubId();
 
         // バリデーションエラー
         if (bindingResult.hasErrors()) {
+            // パラメータを返却用にセット(値を保持するため)
             mav.addObject("registerActivitySaveForm", paramForm);
-                mav.addObject("leaderClubId", leaderUserID);
+            // セッションから取得したclubIdをleaderClubIdにセット
+            mav.addObject("leaderClubId", leaderClubId);
             mav.setViewName("registerActivity");
             return mav;
         } 
 
         // セッションが切れた場合、エラー画面に遷移
-            if (leaderUserID.isEmpty()) {
-                mav.setViewName("error");
-                return mav;
-            }
+        if (leaderClubId == null || leaderClubId.isEmpty()) {
+            mav.setViewName("error");
+            return mav;
+        }
 
         try {
             // インスタンス化
@@ -105,14 +104,16 @@ public class RegisterActivityController {
             /*
              * TODO ➋ activitySaveDtoに、パラメータをsetする。
              */
-             activitySaveDto.setActivityDate(paramForm.getActivityDate());
-             activitySaveDto.setActivityName(paramForm.getActivityName());
-             activitySaveDto.setActivityPlace(paramForm.getActivityPlace());
-             activitySaveDto.setActivityStartTime(paramForm.getActivityStartTime());
-             activitySaveDto.setActivityEndTime(paramForm.getActivityEndTime());
-             activitySaveDto.setActivityDescription(paramForm.getActivityDescription());
-             activitySaveDto.setClubId(paramForm.getClubId());
-             activitySaveDto.setMaxParticipant(paramForm.getMaxParticipant());
+            // 必要なパラメータをformからdtoにsetする
+            activitySaveDto.setActivityDate(paramForm.getActivityDate());
+            activitySaveDto.setActivityName(paramForm.getActivityName());
+            activitySaveDto.setActivityPlace(paramForm.getActivityPlace());
+            activitySaveDto.setActivityStartTime(paramForm.getActivityStartTime());
+            activitySaveDto.setActivityEndTime(paramForm.getActivityEndTime());
+            activitySaveDto.setActivityDescription(paramForm.getActivityDescription());
+            // セッションから取得したclubIdをsetする
+            activitySaveDto.setClubId(leaderClubId);
+            activitySaveDto.setMaxParticipant(paramForm.getMaxParticipant());
 
 
 
@@ -128,8 +129,11 @@ public class RegisterActivityController {
 
             // 活動登録に成功した場合、トップ画面に遷移
             if ("activityRegisterCompleteMessage".equals(resultMessageKey)) {
+                // メッセージをフラッシュスコープにセット
                 redirectAttributes.addFlashAttribute("activityRegisterCompleteMessage", resultMessage);
-                mav.addObject("leaderClubId", leaderUserID);
+                // セッションから取得したclubIdをleaderClubIdにセット
+                mav.addObject("leaderClubId", leaderClubId);
+                // リダイレクト先を指定(top画面)
                 mav.setViewName("redirect:/top");
                 return mav;
 

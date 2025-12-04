@@ -2,10 +2,7 @@ package jp.co.jc21ps.activity_management.form;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -27,10 +24,9 @@ public class RegisterActivitySaveForm {
      * 1.空白、nullを制御
      * 2.入力値制御(ヒント : @○○(max = ○○, message = "{Size}")
      */
-
+    @NotBlank(message = "{NotBlank}")
+    @Size(max = 30, message = "{Size}")
     private String activityName;
-        @NotBlank(message = "{NotBlank}")
-        @Size(max = 31,message = "{size}")
 
         
 
@@ -40,10 +36,9 @@ public class RegisterActivitySaveForm {
      * 1.空白、nullを制御 (ヒント : @○○(message = "{NotBlank}"))
      * 2.日付形式の制御(ヒント : @○○(pattern = "{DateTimeFormat}")
      */
-
+    @NotBlank(message = "{NotBlank}")
+    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "{Pattern.activityDate}")
     private String activityDate;
-        @NotBlank(message = "{NotBlank}")
-        @DateTimeFormat(pattern = "{DateTimeFormat}")
 
     // 過去の日付が入力されたとき
     @AssertTrue(message = "{AssertTrue.activityDate}")
@@ -62,34 +57,31 @@ public class RegisterActivitySaveForm {
 
     // 活動場所
     /*
-     * TODO ➌ activityDateに対し、バリデーションの条件を付与する
+     * TODO ➌ activityPlaceに対し、バリデーションの条件を付与する
      * 1.空白、nullを制御 (ヒント : @○○(message = "{NotBlank}"))
      * 2.入力値制御(ヒント : @○○(max = ○○, message = "{Size}")
      */
-
+    @NotBlank(message = "{NotBlank}")
+    @Size(max = 30, message = "{Size}")
     private String activityPlace;
-        @NotBlank(message = "{NotBlank}")
-        @Size(max = 31,message = "{size}")
 
     /*
      * TODO ➍ activityStartTimeに対し、バリデーションの条件を付与する
      * 1.空白、nullを制御 (ヒント : @○○(message = "{NotBlank}"))
      */
     // 活動時間(自)
-
+    @NotBlank(message = "{NotBlank}")
     @Pattern(regexp = "^(?:[01]\\d|2[0-3]):[0-5]\\d$", message = "{Pattern.activityStartTime}") // hh:mm形式
     private String activityStartTime;
-        @NotBlank(message = "{NotBlank}")
 
     // 活動時間(至)
     /*
      * TODO ➎ activityEndTimeに対し、バリデーションの条件を付与する
      * 1.空白、nullを制御 (ヒント : @○○(message = "{NotBlank}"))
      */
-
+    @NotBlank(message = "{NotBlank}")
     @Pattern(regexp = "^(?:[01]\\d|2[0-3]):[0-5]\\d$", message = "{Pattern.activityEndTime}") // hh:mm形式
     private String activityEndTime;
-        @NotBlank(message = "{NotBlank}")
 
     // 時間の前後関係チェック
     @AssertTrue(message = "{AssertTrue}")
@@ -121,10 +113,9 @@ public class RegisterActivitySaveForm {
      * 1.空白、nullを制御 (ヒント : @○○(message = "{NotBlank}"))
      * 2.入力値制御(ヒント : @○○(max = ○○, message = "{Size}")
      */
-
+    @NotBlank(message = "{NotBlank}")
+    @Size(max = 400, message = "{Size}")
     private String activityDescription;
-         @NotBlank(message = "{NotBlank}")
-        @Size(max = 31,message = "{size}")
 
     // 募集人数
     /*
@@ -133,13 +124,23 @@ public class RegisterActivitySaveForm {
      * 2.最小値制御(ヒント : @○○(value = ○, message = "{Min}")
      * 3.最大値制御(ヒント : @○○(value = ○○, message = "{Max}")
      */
-
-    @Pattern(regexp = "^[0-9]*$", message = "{Pattern.maxParticipant}") // 半角数字
-
+    @NotBlank(message = "{NotBlank}")
+    @Pattern(regexp = "^[0-9]+$", message = "{Pattern.maxParticipant}") // 半角数字
     private String maxParticipant;
-        @NotBlank(message = "{NotBlank}")
-        @Min(value = 1, message = "{Min}")
-        @Max(value = 100, message = "{Max}")
+
+    // 募集人数の範囲チェック
+    @AssertTrue(message = "{AssertTrue.maxParticipant}")
+    public boolean isMaxParticipantValid() {
+        try {
+            if (maxParticipant != null && !maxParticipant.isEmpty()) {
+                int value = Integer.parseInt(maxParticipant);
+                return value >= 1 && value <= 100;
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
     private String message;
 
